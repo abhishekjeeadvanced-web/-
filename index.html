@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#020617">
+<title>Mission "आत्मसम्मान" - SSC CGL Planner</title>
+
+<!-- PWA Manifest & Icons -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="logo.svg">
+
+<style>
+/* Glassmorphism Black & Blue Theme */
+:root {
+    --p: #0f172a; 
+    --s: #3b82f6; /* Bright Blue Accent */
+    --ok: #10b981; --warn: #f59e0b; --err: #ef4444; --purp: #8b5cf6;
+    
+    /* Background: Very deep blue/black */
+    --bg: #020617; 
+    
+    /* Glassmorphism Cards: Translucent dark blue */
+    --card: rgba(15, 23, 42, 0.65); 
+    --glass: rgba(15, 23, 42, 0.85);
+    
+    --text: #f8fafc;
+    --bdr: rgba(59, 130, 246, 0.25); /* Subtle blue border */
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+body {
+    background: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%), 
+                var(--bg);
+    color: var(--text); line-height: 1.5;
+    min-height: 100vh; padding-bottom: 50px;
+    background-attachment: fixed;
+}
+
+/* Glassmorphism Base Class */
+.glass {
+    background: var(--card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--bdr);
+    box-shadow: var(--shadow);
+}
+
+header {
+    position: sticky; top: 0; z-index: 1000;
+    background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--bdr); padding: 16px 20px; text-align: center;
+}
+h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(59,130,246,0.5); }
+.sub { font-size: .85rem; opacity: .8; margin-top: 4px; color: #94a3b8; }
+.container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; margin-bottom: 20px; }
+.btn {
+    border: 1px solid var(--bdr); border-radius: 8px; padding: 8px 16px; font-weight: 600; font-size: 0.85rem;
+    background: rgba(30, 41, 59, 0.8); color: var(--text); cursor: pointer;
+    backdrop-filter: blur(4px); transition: all .3s; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(59,130,246,0.3); border-color: var(--s); }
+.btn.p { background: linear-gradient(135deg, rgba(59,130,246,0.8), rgba(37,99,235,0.8)); border:none; }
+.btn.g { background: linear-gradient(135deg, rgba(16,185,129,0.8), rgba(5,150,105,0.8)); border:none; }
+.btn.r { background: linear-gradient(135deg, rgba(239,68,68,0.8), rgba(220,38,38,0.8)); border:none; }
+
+select, input, textarea {
+    padding: 10px; border-radius: 8px; border: 1px solid var(--bdr);
+    background: rgba(15, 23, 42, 0.8); color: var(--text); font-family: inherit; outline: none; width: 100%;
+}
+select:focus, input:focus, textarea:focus { border-color: var(--s); box-shadow: 0 0 0 3px rgba(59,130,246,0.3); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 16px; margin-bottom: 20px; }
+.stat { border-left: 4px solid var(--s); border-radius: 12px; padding: 16px; }
+.stat .v { font-size: 1.8rem; font-weight: 800; color: var(--s); text-shadow: 0 0 8px rgba(59,130,246,0.4); }
+.stat .l { font-size: .8rem; opacity: .7; margin-top: 4px; font-weight: 600; text-transform: uppercase; }
+.stat.ok { border-left-color: var(--ok); } .stat.ok .v { color: var(--ok); text-shadow: 0 0 8px rgba(16,185,129,0.4); }
+.stat.warn { border-left-color: var(--warn); } .stat.warn .v { color: var(--warn); }
+.stat.err { border-left-color: var(--err); } .stat.err .v { color: var(--err); }
+.stat.purp { border-left-color: var(--purp); } .stat.purp .v { color: var(--purp); }
+
+.countdowns { display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap: 16px; margin-bottom: 20px; }
+.count { background: linear-gradient(135deg,rgba(59,130,246,0.2),rgba(139,92,246,0.2)); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 18px; text-align: center; }
+.count.alt { background: linear-gradient(135deg,rgba(245,158,11,0.2),rgba(239,68,68,0.2)); border-color: rgba(245,158,11,0.3); }
+.crow { display: flex; gap: 10px; margin-top: 12px; justify-content: center; }
+.cdi { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; min-width: 65px; backdrop-filter: blur(5px); }
+.cnum { font-size: 1.5rem; font-weight: 800; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; border-bottom: 1px solid var(--bdr); padding-bottom: 10px; }
+.tab { padding: 10px 20px; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; font-weight: 700; transition: 0.3s; border: 1px solid transparent; }
+.tab.act { color: #fff; background: rgba(59,130,246,0.2); border-color: var(--s); box-shadow: 0 0 15px rgba(59,130,246,0.2); }
+.tabp { display: none; animation: fadeIn .4s ease; } .tabp.act { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.msec { border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+.mhdr { background: rgba(0,0,0,0.2); padding: 14px 18px; border-bottom: 1px solid var(--bdr); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
+.mhdr:hover { background: rgba(59,130,246,0.1); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 850px; font-size: 0.85rem; }
+th, td { padding: 12px; border-bottom: 1px solid var(--bdr); vertical-align: top; }
+th { background: rgba(0,0,0,0.3); font-weight: 600; text-align: left; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.topic-title { font-weight: 600; margin-bottom: 6px; }
+.cbg { display: flex; gap: 4px; flex-wrap: wrap; }
+.cbi { border: 1px solid var(--bdr); border-radius: 4px; padding: 4px; font-size: 0.8rem; cursor: pointer; background: rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; transition: 0.2s; }
+.cbi input { display: none; }
+.cbi.ck { background: rgba(16,185,129,0.2); color: var(--ok); border-color: var(--ok); transform: scale(0.95); }
+.note-btn { margin-top: 6px; font-size: 0.7rem; padding: 4px 6px; border-radius: 4px; border: 1px solid var(--bdr); background: transparent; cursor: pointer; color: var(--text); opacity: 0.7; width: 100%; }
+.note-btn.has-note { background: rgba(245,158,11,0.2); border-color: var(--warn); color: var(--warn); font-weight: bold; opacity: 1; }
+
+.mock-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+.mock-form, .mock-table-c { padding: 20px; border-radius: 12px; }
+.mock-form h3 { margin-bottom: 16px; color: var(--s); text-shadow: 0 0 10px rgba(59,130,246,0.3); }
+.fg { margin-bottom: 14px; }
+.fg label { display: block; font-size: .85rem; margin-bottom: 6px; color: #cbd5e1; }
+.perc-display { font-size: 2.2rem; font-weight: 800; color: var(--ok); text-align: center; margin: 15px 0; padding: 15px 10px; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px dashed var(--bdr); text-shadow: 0 0 15px rgba(16,185,129,0.3); }
+
+.charts { display: grid; grid-template-columns: repeat(auto-fit,minmax(400px,1fr)); gap: 20px; }
+.chcard { padding: 16px; border-radius: 12px; }
+.chcard h3 { margin-bottom: 15px; font-size: 1rem; border-bottom: 1px solid var(--bdr); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.chart { width: 100%; height: 260px; display: block; }
+
+.badge { padding: 4px 8px; border-radius: 6px; color: #fff; font-weight: 700; font-size: .75rem; white-space: nowrap; }
+.b-ok { background: var(--ok); } .b-warn { background: var(--warn); } .b-err { background: var(--err); } .b-purp { background: var(--purp); }
+
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--bdr); padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 9999; animation: slide .3s ease; font-weight: 600; }
+@keyframes slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+@media(max-width: 900px) { .mock-grid, .charts { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>🎯 Mission "आत्मसम्मान"</h1>
+    <div class="sub">SSC CGL Ultimate Tracker (2026-2028)</div>
+</header>
+
+<div class="container">
+    <div class="toolbar">
+        <button class="btn p" onclick="exportData()">💾 Backup Data</button>
+        <button class="btn g" onclick="document.getElementById('imp').click()">📂 Restore Data</button>
+        <button class="btn r" onclick="resetAll()">⚠️ Reset</button>
+        <input id="imp" type="file" accept=".json" style="display:none" onchange="handleImport(event)">
+    </div>
+
+    <div class="countdowns">
+        <div class="count glass">
+            <div style="font-weight:600;">🔥 Tier-1 Target (Sep 2027)</div>
+            <div class="crow">
+                <div class="cdi"><div class="cnum" id="c1d">000</div><div>Days</div></div>
+                <div class="cdi"><div class="cnum" id="c1h">00</div><div>Hours</div></div>
+                <div class="cdi"><div class="cnum" id="c1m">00</div><div>Mins</div></div>
+                <div class="cdi"><div class="cnum" id="c1s">00</div><div>Secs</div></div>
+            </div>
+        </div>
+        <div class="count alt glass">
+            <div style="font-weight:600;">🎯 Tier-2 Target (Jan 2028)</div>
+            <div class="crow">
+                <div class="cdi"><div class="cnum" id="c2d">000</div><div>Days</div></div>
+                <div class="cdi"><div class="cnum" id="c2h">00</div><div>Hours</div></div>
+                <div class="cdi"><div class="cnum" id="c2m">00</div><div>Mins</div></div>
+                <div class="cdi"><div class="cnum" id="c2s">00</div><div>Secs</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat glass"><div class="v" id="st-topics">0</div><div class="l">Total Topics</div></div>
+        <div class="stat ok glass"><div class="v" id="st-done">0</div><div class="l">Tasks Done</div></div>
+        <div class="stat warn glass"><div class="v" id="st-mocks">0</div><div class="l">Total Mocks</div></div>
+        <div class="stat err glass"><div class="v" id="st-avgp">0%</div><div class="l">Avg Percentile</div></div>
+        <div class="stat purp glass"><div class="v" id="st-maxp">0%</div><div class="l">Highest %ile</div></div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab act" onclick="tab(this,'dash')">📊 Dashboard</div>
+        <div class="tab" onclick="tab(this,'sched')">🗓️ Schedule</div>
+        <div class="tab" onclick="tab(this,'mocks')">📋 Mock Analysis</div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dash" class="tabp act">
+        <div class="charts">
+            <div class="chcard glass" style="grid-column: 1 / -1;">
+                <h3>
+                    <span>📉 Percentile Progression</span>
+                    <select id="timeframeSel" style="width:auto; padding:4px; background:transparent;" onchange="drawCharts()">
+                        <option value="all">All Tests</option>
+                        <option value="weekly">Weekly Avg</option>
+                        <option value="biweekly">Bi-Weekly Avg</option>
+                        <option value="monthly">Monthly Avg</option>
+                    </select>
+                </h3>
+                <canvas id="ch-trend" class="chart"></canvas>
+            </div>
+            <div class="chcard glass">
+                <h3><span>🏆 Platform-wise Avg %ile</span></h3>
+                <canvas id="ch-plat" class="chart"></canvas>
+            </div>
+            <div class="chcard glass">
+                <h3><span>📊 Phase Progress</span></h3>
+                <canvas id="ch-phase" class="chart"></canvas>
+            </div>
+            <div class="chcard glass" style="grid-column: 1 / -1;">
+                <h3><span>🎯 Subject Readiness</span></h3>
+                <canvas id="ch-subj" class="chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div id="sched" class="tabp">
+        <div class="controls glass" style="padding:10px; border-radius:12px;">
+            <select id="phaseFilter" onchange="renderSchedule()" style="width:auto; background:transparent;">
+                <option value="all">All Phases</option>
+                <option value="1">Phase 1 (Foundation)</option>
+                <option value="2">Phase 2 (Revise & Sec)</option>
+                <option value="3">Phase 3 (Tier-2)</option>
+            </select>
+            <input type="text" id="searchBox" placeholder="Search topic..." oninput="applyFilters()" style="flex:1; background:transparent;">
+            <select id="statusFilter" onchange="applyFilters()" style="width:auto; background:transparent;">
+                <option value="all">Show All</option>
+                <option value="inc">Incomplete Only</option>
+                <option value="com">Completed Only</option>
+                <option value="nod">Hide Mastered</option>
+            </select>
+        </div>
+        <div id="scheduleBox"></div>
+    </div>
+
+    <!-- MOCKS -->
+    <div id="mocks" class="tabp">
+        <div class="mock-grid">
+            <div class="mock-form glass">
+                <h3>➕ Log Mock Test</h3>
+                <div class="fg"><label>Date</label><input type="date" id="mk-date"></div>
+                <div class="fg">
+                    <label>Platform</label>
+                    <select id="mk-plat" onchange="checkNewPlat()"></select>
+                </div>
+                <div class="fg">
+                    <label>Test Type</label>
+                    <select id="mk-type">
+                        <option>Full Mock (Tier-1)</option><option>Full Mock (Tier-2)</option>
+                        <option>Maths Sec.</option><option>Reasoning Sec.</option>
+                        <option>English Sec.</option><option>GK/Comp Sec.</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <div class="fg" style="flex:1;"><label>Score</label><input type="number" id="mk-score" placeholder="145"></div>
+                    <div class="fg" style="flex:1;"><label>Rank</label><input type="number" id="mk-rank" oninput="calcPerc()" placeholder="150"></div>
+                    <div class="fg" style="flex:1;"><label>Total</label><input type="number" id="mk-total" oninput="calcPerc()" placeholder="5000"></div>
+                </div>
+                <div class="fg"><label>Error Log</label><textarea id="mk-notes" placeholder="Formulas forgotten..."></textarea></div>
+                <div class="perc-display" id="mk-perc-disp">0.00%</div>
+                <button class="btn p" style="width:100%; justify-content:center; padding:12px;" onclick="saveMock()">💾 Save Mock</button>
+            </div>
+
+            <div class="mock-table-c glass">
+                <h3 style="color:var(--s); margin-bottom:15px;">📋 Mock History</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Date</th><th>Platform</th><th>Type</th><th>Score</th><th>Rank/Tot</th><th>%ile</th><th>Notes</th><th>Act</th></tr></thead>
+                        <tbody id="mocksTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastBox"></div>
+
+<script>
+// --- REGISTER SERVICE WORKER (FOR PWA) ---
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(r => console.log('SW Registered')).catch(e => console.log('SW Error', e));
+  });
+}
+
+// --- DATA ---
+const phasesMeta = {
+    1: { name: "Phase 1 (Apr 26 - Mar 27)", icons: ["📖", "📝", "🔄", "🎯"] },
+    2: { name: "Phase 2 (Apr 27 - Sep 27)", icons: ["📘", "📊", "📈", "⚔️"] },
+    3: { name: "Phase 3 (Oct 27 - Jan 28)", icons: ["⚡", "⚙️", "📜", "💯"] }
+};
+
+const schedule = [
+    {phase:1,month:"April 2026",theme:"Foundation & Calculations",weeks:[
+        ["Strategy & Calc Boosters","Alphabet Test (175Q)","Verb (Basic)","Root Words Basics","Polity: Preamble & FR","Physics: Units & Motion"],
+        ["Percentage Basics (211Q)","Coding-Decoding (141Q)","Tense","Root Words Advanced","Polity: President & PM","Physics: Force & Friction"],
+        ["Percentage Advanced","Number & Letter Series","Passive Voice","Homonyms & Confused","Mod. History: 1757-1857","Biology: Cell & Tissues"],
+        ["Ratio & Proportion (171Q)","Alphanumeric Series","Narration (Dir/Indirect)","Common Synonyms","Mod. History: 1857-1905","Biology: Classification"]
+    ]},
+    {phase:1,month:"May 2026",theme:"Core Arithmetic & Logic",weeks:[
+        ["Profit & Loss (172Q)","Analogy & Similarity","Question Tag","Synonyms A-Z (1)","Mod. History: 1905-1920","Physics: Work & Energy"],
+        ["Discount (105Q)","Classification (147Q)","Subject-Verb Agreement","Synonyms A-Z (2)","Congress Sessions/Viceroys","Chemistry: Matter & Atoms"],
+        ["Simple Interest (80Q)","Direction Test (61Q)","Conditional Sentence","PYQ Synonyms 2018-24","Ancient: Indus & Vedic","Chemistry: Acids & Bases"],
+        ["CI & Installments (162Q)","Blood Relation (74Q)","Verb (Advance)","PYQ Antonyms 2018-24","Ancient: Buddhism/Jainism","Biology: Plant Kingdom"]
+    ]},
+    {phase:1,month:"June 2026",theme:"Advancing Arithmetic",weeks:[
+        ["Partnership & Average","Order & Ranking","Noun","Idioms Thematic 1","Geo: Earth & Lat/Long","Biology: Human Body (1)"],
+        ["Weighted Avg & Alligation","Sitting Arrangement","Pronoun","Idioms Thematic 2","Geo: Climate/Soil/Rivers","Biology: Human Body (2)"],
+        ["Time & Work","Puzzle","Adjective","PYQ Idioms 2018-24","Geo: India & Minerals","Physics: Heat & Temp"],
+        ["Time/Distance/Trains","Syllogism","Conjunction","One Word Subs (Category)","World Geography Basics","Physics: Light & Sound"]
+    ]},
+    {phase:1,month:"July 2026",theme:"Number System & Analytical",weeks:[
+        ["Number System (1-6)","Coded Inequalities","Article","PYQ OWS","Medieval: Delhi Sultanate","Chemistry: Metals & Non-metals"],
+        ["Number System (7-12)","Calendar","Preposition","Phrasal Verbs","Medieval: Mughal Empire","Chemistry: Periodic Table"],
+        ["Number System (13-18)","Clock","Adverb","Phrasal Practice","Art & Culture Basics","Biology: Diseases/Vitamins"],
+        ["HCF & LCM","Data Sufficiency","Words Confused","Fixed Prepositions","Polity: Parliament & State","Environment: Ecology Basics"]
+    ]},
+    {phase:1,month:"August 2026",theme:"Algebra & Science",weeks:[
+        ["Algebra (1-6)","Word Formation","Reading Comprehension","Misspelt Correct","Mod. History: Gandhi Era","Physics: Electricity"],
+        ["Algebra (7-14)","Math Operations","Cloze Test","Misspelt Wrong","Constitutional Development","Physics: Magnetism/Modern"],
+        ["Algebra (15-22)","Arithmetical Reasoning","Para Jumbles","Misspelt Sentence","Freedom Struggle Events","Chemistry: Reactions"],
+        ["Equations","Input Output","Error Spotting Mixed","Mixed Vocab","Polity: Judiciary & Local","Chemistry: Organic/Carbon"]
+    ]},
+    {phase:1,month:"September 2026",theme:"Surds, Indices & Economics",weeks:[
+        ["AP, GP, HP","Character Puzzle","Phrase Replacement","PYQ Vocab Rev 1","Economy: Budget/Inflation","Biology: Nutrition/Digest"],
+        ["Surds & Indices","Courses of Action","Sentence Improvement","PYQ Vocab Rev 2","Economy: GDP & Banking","Biology: Genetics/Evolution"],
+        ["Simplification","Stmt & Assumptions","Spelling Practice","Vocab Practice","Taxation & Institutions","Computer: Basics & HW"],
+        ["Data Interpretation","Stmt & Arguments","Sentence Completion","Vocab Speed Tests","Static: Awards/Books/HQ","Computer: OS & MS Office"]
+    ]},
+    {phase:1,month:"October 2026",theme:"Geometry & GA Revision",weeks:[
+        ["Plane Geom (1-8)","Cause & Effects","Mixed Practice 1","Root Word Revision","FRB History Revision","Computer: Internet/Network"],
+        ["Plane Geom (9-16)","Stmt & Conclusion","Mixed Practice 2","Synonyms Full Rev","FRB Polity Revision","Computer: Cyber Security"],
+        ["Plane Geom (17-24)","Venn Diagram","Advanced Cloze","Idioms Full Rev","FRB Geography Revision","Environment: Biodiversity"],
+        ["Plane Geom (25-32)","Counting of Figures","Advanced Para Jumbles","OWS Revision","Hist+Polity+Geo PYQs","Environment: Pollution"]
+    ]},
+    {phase:1,month:"November 2026",theme:"Mensuration & Non-Verbal",weeks:[
+        ["Mass Plane Geometry","Dice","PYQ Grammar 1-3","PYQ Vocab 1-3","FRB Economy Revision","FRB Physics Revision"],
+        ["Mensuration 2D (1-6)","Cube & Cuboid","PYQ Grammar 4-6","PYQ Vocab 4-6","Static GK Revision","FRB Chemistry Revision"],
+        ["Mensuration 2D (7-12)","Mirror/Water Image","PYQ Grammar 7-9","PYQ Vocab 7-9","CA (3 Months)","FRB Biology Revision"],
+        ["Mensuration 2D (13-17)","Paper Cutting/Folding","PYQ Grammar 10-12","PYQ Vocab 10-12","Mixed GK PYQs","Science+Computer PYQs"]
+    ]},
+    {phase:1,month:"December 2026",theme:"3D Mensuration & CA",weeks:[
+        ["Mensuration 3D (1-5)","Embedded Figures","Grammar Rule Rev","Vocab Marathon 1","CA Q1 Consolidate","Environment: Climate Change"],
+        ["Mensuration 3D (6-10)","Incomplete Figures","RC & Cloze Rev","Vocab Marathon 2","CA Q2 Consolidate","Environment: Acts & Bodies"],
+        ["Mensuration 3D (11-15)","Non Verbal Series","Error Detection 1000+","Full Vocab Rev","Parmar Mag Revision","Environment: Conventions"],
+        ["Trigonometry (1-6)","Non Verbal Analogy","English Mock Analysis","Vocab Mock Tests","Mixed GK Tests","Mixed GS Tests"]
+    ]},
+    {phase:1,month:"January 2027",theme:"Trigonometry & Exam Mode",weeks:[
+        ["Trigonometry (7-12)","Non Verbal Classification","Tier-1 Mock Eng 1-2","Vocab Syn Rev","Polity/History Rev","Physics Rev"],
+        ["Trigonometry (13-17)","Dot Situations","Tier-1 Mock Eng 3-4","Idioms Rev","Geo/Economy Rev","Chemistry Rev"],
+        ["Height & Distance","Group Identical Fig","Tier-1 Mock Eng 5-6","Vocab Speed","Static GK Final Rev","Biology/Environment Rev"],
+        ["Coordinate Geometry","Image Analysis+Matrix","Tier-1 Mock Eng 7-8","Pinnacle Vocab Final","Marked Qs Rev","Computer Final Rev"]
+    ]},
+    {phase:1,month:"February 2027",theme:"Stats, Probability & Error Phase",weeks:[
+        ["Statistics","Logical Seq. of Words","Tier-2 Level RC","Tier-2 Vocab","Mock + Error Copy","Science Mocks"],
+        ["Permutation & Combination","Stmt & Inferences","Tier-2 PQRS","Advanced Vocab","Fast Read","Computer Mocks"],
+        ["Probability","Reasoning Mix Mocks","Sectional Eng Mocks","Vocab Sectionals","Static Facts Polish","Environment Mocks"],
+        ["Mixed Math PYQ Sets","Reasoning PYQ Sets","Grammar Exception Rules","Vocab Final Rev","High-Freq Facts","GS Error Copy"]
+    ]},
+    {phase:1,month:"March 2027",theme:"Final Consolidation",weeks:[
+        ["Adv. Math Final Revision","Weak Area Polish","Grammar Marathon","Vocab Marathon Final","FRB 2.0 Final","Science Final"],
+        ["Arithmetic Final Rev","Speed/Mock Analysis","Grammar Full Rev","Root Word Final","Mind Maps + Error Copy","Computer Final"],
+        ["Formulas & Shortcuts","Time Mgmt Drill","Grammar Final Test","Vocab Final Test","CA One Shots & Quizzes","Environment Final Rev"],
+        ["Phase 1 Complete! 🎉","Phase 1 Complete! 🎉","Phase 1 Complete! 🎉","Phase 1 Complete! 🎉","Phase 1 Complete! 🎉","Phase 1 Complete! 🎉"]
+    ]},
+    {phase:2,month:"April 2027",theme:"Topic-wise Rev & Quizzes",weeks:[
+        ["Arith Rev & Quiz","Alpha/Coding Quiz","Basic Gram Quiz","Root/Syn Quiz","Hist/Pol Quiz","Phys/Bio Quiz"],
+        ["Adv Math 1 Quiz","Series/Puzzle Quiz","Adv Gram Quiz","Ant/Idiom Quiz","Geo/Eco Quiz","Chem/Env Quiz"],
+        ["Adv Math 2 Quiz","Non-Verbal Quiz","Mix Gram Quiz","OWS/Spell Quiz","Static GK Quiz","Comp Quiz"],
+        ["Math Wk Area Fix","Reas Wk Area Fix","Gram Wk Area Fix","Vocab Wk Area","GK Wk Area Fix","GS Wk Area Fix"]
+    ]},
+    {phase:2,month:"May 2027",theme:"Sectionals & Weak Areas",weeks:[
+        ["Math Sec Test 1-2","Reas Sec Test 1-2","Gram Sec Test 1","Vocab Sec Test 1","GK Sec Test 1","GS Sec Test 1"],
+        ["Math Sec Test 3-4","Reas Sec Test 3-4","Gram Sec Test 2","Vocab Sec Test 2","GK Sec Test 2","GS Sec Test 2"],
+        ["Math Sec Test 5-6","Reas Sec Test 5-6","Gram Sec Test 3","Vocab Sec Test 3","GK Sec Test 3","GS Sec Test 3"],
+        ["Math Ana & Rev","Reas Ana & Rev","Eng Ana & Rev","Vocab Ana & Rev","GK Ana & Rev","GS Ana & Rev"]
+    ]},
+    {phase:2,month:"June 2027",theme:"Part Tests & Full Mocks",weeks:[
+        ["FM 1 Math Ana","FM 1 Reas Ana","FM 1 Gram Ana","FM 1 Vocab Ana","FM 1 GK Ana","FM 1 GS Ana"],
+        ["FM 2-3 Math Ana","FM 2-3 Reas Ana","FM 2-3 Gram Ana","FM 2-3 Vocab Ana","FM 2-3 GK Ana","FM 2-3 GS Ana"],
+        ["FM 4-5 Math Ana","FM 4-5 Reas Ana","FM 4-5 Gram Ana","FM 4-5 Vocab Ana","FM 4-5 GK Ana","FM 4-5 GS Ana"],
+        ["All India Mock 1","All India Mock 1","All India Mock 1","All India Mock 1","All India Mock 1","All India Mock 1"]
+    ]},
+    {phase:2,month:"July 2027",theme:"T1 Polish & T2 Transition",weeks:[
+        ["FM 6-7 Math Ana","FM 6-7 Reas Ana","FM 6-7 Gram Ana","FM 6-7 Vocab Ana","FM 6-7 GK Ana","FM 6-7 GS Ana"],
+        ["All India Mock 2","All India Mock 2","All India Mock 2","All India Mock 2","All India Mock 2","All India Mock 2"],
+        ["T2 Arith Adv","T2 Logic Adv","T2 Gram Adv","T2 Vocab Adv","T2 Stmt GK","T2 Stmt GS"],
+        ["T2 Geom/Mens Adv","T2 Puzzle Adv","T2 RC & Cloze","T2 Phrasal Adv","T2 Match GK","T2 Comp Adv"]
+    ]},
+    {phase:2,month:"August 2027",theme:"T2 Advanced Sectionals",weeks:[
+        ["T2 Math Sec 1-2","T2 Reas Sec 1-2","T2 Eng Sec 1-2","T2 Vocab Sec 1","T2 GK Sec 1-2","T2 GS Sec 1-2"],
+        ["T2 Math Sec 3-4","T2 Reas Sec 3-4","T2 Eng Sec 3-4","T2 Vocab Sec 2","T2 GK Sec 3-4","T2 GS Sec 3-4"],
+        ["T2 Full Mock 1","T2 Full Mock 1","T2 Full Mock 1","T2 Full Mock 1","T2 Full Mock 1","T2 Full Mock 1"],
+        ["T2 Full Mock 2","T2 Full Mock 2","T2 Full Mock 2","T2 Full Mock 2","T2 Full Mock 2","T2 Full Mock 2"]
+    ]},
+    {phase:2,month:"September 2027",theme:"Final All India & Exam Ready",weeks:[
+        ["All India Mock T2","All India Mock T2","All India Mock T2","All India Mock T2","All India Mock T2","All India Mock T2"],
+        ["Math Error Book","Reas Error Book","Gram Error Book","Vocab Error Book","GK Error Book","GS Error Book"],
+        ["Math Formulas","Reas Shortcuts","Eng Exception","Vocab High Freq","GK Top 100","GS Top 100"],
+        ["Exam Ready! 🚀","Exam Ready! 🚀","Exam Ready! 🚀","Exam Ready! 🚀","Exam Ready! 🚀","Exam Ready! 🚀"]
+    ]},
+    {phase:3,month:"Oct 2027",theme:"Intense Tier-2 Revision",weeks:[
+        ["Probability & Stats","Statement/Assump","Tier-2 RC Adv","Current Affairs M1-3","Computer Architecture","Typing Prac 1"],
+        ["3D Mensuration Adv","Puzzles & Matrix","Cloze Test Adv","Current Affairs M4-6","Networking & Cyber","Typing Prac 2"],
+        ["Geom: Circles/Triangles","Data Sufficiency","PQRS Adv","Static GK Top 100","MS Office Adv (Excel)","Typing Prac 3"],
+        ["Number Sys & Algebra","Syllogism Hard","Vocab: Thematic","Polity Articles","Shortcuts & Web","Typing Prac 4"]
+    ]},
+    {phase:3,month:"Nov 2027",theme:"High-Weightage & Sec Mocks",weeks:[
+        ["Arith: Time/Work/Dist","Critical Reasoning","Grammar: Exception Rules","History: Freedom Move","Computer Memory","Maths Sec Mock 1-3"],
+        ["Arith: Percent/Profit","Non-Verbal Adv","Grammar: Tense/Voice","Geo: Maps & Rivers","Internet Protocols","Eng Sec Mock 1-3"],
+        ["Adv Math Mix PYQ","Coding/Series Hard","Vocab: Phrasal Verbs","Science: Physics Mix","Computer PYQ 1","Reas Sec Mock 1-3"],
+        ["All Math Formulas Rev","Reasoning Mix PYQ","All Eng Rules Rev","Science: Bio/Chem Mix","Computer PYQ 2","GK/Comp Sec Mock 1"]
+    ]},
+    {phase:3,month:"Dec 2027",theme:"Alternate Day Full Mocks",weeks:[
+        ["Tier-2 Full Mock 1","Tier-2 Full Mock 2","Tier-2 Full Mock 3","Mock 1-3 Error Log","Static GK Brushup","Computer Brushup"],
+        ["Tier-2 Full Mock 4","Tier-2 Full Mock 5","Tier-2 Full Mock 6","Mock 4-6 Error Log","Vocab Brushup","Math Form Brushup"],
+        ["Tier-2 Full Mock 7","Tier-2 Full Mock 8","Tier-2 Full Mock 9","Mock 7-9 Error Log","Current Aff Brushup","Reas Brushup"],
+        ["Tier-2 Full Mock 10","Tier-2 Full Mock 11","Tier-2 Full Mock 12","Mock 10-12 Error Log","Science Brushup","Typing Speed Test"]
+    ]},
+    {phase:3,month:"Jan 2028",theme:"Daily Mocks & Polish",weeks:[
+        ["All India Mock 1","All India Mock 2","All India Mock 3","Mega Error Log 1","Latest CA Rev 1","Comp Mega Rev"],
+        ["All India Mock 4","All India Mock 5","All India Mock 6","Mega Error Log 2","Latest CA Rev 2","Eng Mega Rev"],
+        ["All India Mock 7","All India Mock 8","All India Mock 9","Mega Error Log 3","GK Mega Rev","Math Mega Rev"],
+        ["Final Strat & Chill","Final Strat & Chill","Exam Day! 🎉","Exam Day! 🎉","Exam Day! 🎉","Exam Day! 🎉"]
+    ]}
+];
+
+// --- APP STATE & LOGIC ---
+let state = { checks: {}, notes: {}, mocks: [], platforms: ["Testbook", "Oliveboard", "Pinnacle", "RWA", "SuperMocks"] };
+
+document.addEventListener('DOMContentLoaded', () => {
+    const s = localStorage.getItem('aatma_state');
+    if(s) { try{ state = JSON.parse(s); }catch(e){} }
+    if(!state.platforms) state.platforms = ["Testbook", "Oliveboard", "Pinnacle", "RWA", "SuperMocks"];
+    document.getElementById('mk-date').valueAsDate = new Date();
+    renderAll(); startCountdowns();
+});
+
+function saveState() { localStorage.setItem('aatma_state', JSON.stringify(state)); }
+
+function toast(msg, type='ok') {
+    const t = document.createElement('div'); t.className = 'toast';
+    t.style.borderLeft = `5px solid var(--${type})`; t.textContent = msg;
+    document.getElementById('toastBox').appendChild(t); setTimeout(() => t.remove(), 2500);
+}
+
+function tab(btn, id) {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('act'));
+    document.querySelectorAll('.tabp').forEach(p => p.classList.remove('act'));
+    btn.classList.add('act'); document.getElementById(id).classList.add('act');
+    if(id === 'dash') setTimeout(drawCharts, 50); 
+}
+
+function startCountdowns() {
+    const t1 = new Date('2027-09-15T00:00:00').getTime(), t2 = new Date('2028-01-15T00:00:00').getTime();
+    const upd = () => {
+        const now = new Date().getTime();
+        const set = (tgt, ids) => {
+            let d = tgt - now; if(d <= 0) return;
+            document.getElementById(ids[0]).textContent = String(Math.floor(d / 864e5)).padStart(3, '0');
+            document.getElementById(ids[1]).textContent = String(Math.floor((d % 864e5) / 36e5)).padStart(2, '0');
+            document.getElementById(ids[2]).textContent = String(Math.floor((d % 36e5) / 6e4)).padStart(2, '0');
+            document.getElementById(ids[3]).textContent = String(Math.floor((d % 6e4) / 1e3)).padStart(2, '0');
+        };
+        set(t1, ["c1d", "c1h", "c1m", "c1s"]); set(t2, ["c2d", "c2h", "c2m", "c2s"]);
+    };
+    upd(); setInterval(upd, 1000);
+}
+
+// --- SCHEDULE RENDER ---
+function renderSchedule() {
+    const box = document.getElementById('scheduleBox'); const phaseSel = document.getElementById('phaseFilter').value;
+    let html = '';
+    schedule.forEach((mo, moIdx) => {
+        if(phaseSel !== 'all' && mo.phase != phaseSel) return;
+        let rows = '';
+        mo.weeks.forEach((wk, wi) => {
+            let rowHtml = `<tr><td style="font-weight:600;">W${wi+1}</td>`;
+            wk.forEach((topic, si) => {
+                const key = `${mo.phase}-${moIdx}-${wi}-${si}`; let cbs = '';
+                phasesMeta[mo.phase].icons.forEach((ic, ti) => {
+                    const id = `cb-${key}-${ti}`; const ck = !!state.checks[id];
+                    cbs += `<label class="cbi ${ck?'ck':''}"><input type="checkbox" id="${id}" ${ck?'checked':''} onchange="toggleCheck('${id}', this)">${ic}</label>`;
+                });
+                const nId = `n-${key}`; const nOn = !!state.notes[nId];
+                rowHtml += `<td class="topic"><div class="topic-title">${topic}</div><div class="cbg">${cbs}</div>
+                <button class="note-btn ${nOn?'has-note':''}" data-top="${topic.replace(/"/g,'')}" onclick="openNote('${nId}', this.dataset.top)">${nOn?'📝 Note':'➕ Note'}</button></td>`;
+            }); rows += rowHtml + '</tr>';
+        });
+        html += `<div class="msec glass"><div class="mhdr" onclick="toggleMonth(this)"><h3 style="margin:0;">📅 ${mo.month} — ${mo.theme} <span style="font-size:0.8rem;opacity:0.8;">(${phasesMeta[mo.phase].name})</span></h3>
+        <span class="badge b-purp" id="mb-${mo.phase}-${moIdx}">0%</span></div><div class="table-wrap mcnt"><table>
+        <thead><tr><th style="width:40px">Wk</th><th>Math</th><th>Reasoning</th><th>English</th><th>Vocab</th><th>GK/GS/Comp</th><th>Misc</th></tr></thead>
+        <tbody>${rows}</tbody></table></div></div>`;
+    });
+    box.innerHTML = html; applyFilters(); updateBadges();
+}
+
+function toggleCheck(id, el) {
+    if(state.checks[id]) { delete state.checks[id]; el.parentElement.classList.remove('ck'); } 
+    else { state.checks[id] = true; el.parentElement.classList.add('ck'); }
+    saveState(); updateBadges(); applyFilters(); 
+}
+function openNote(id, topic) {
+    const txt = prompt(`Notes for:\n${topic}`, state.notes[id] || '');
+    if(txt !== null) { if(txt.trim()) state.notes[id] = txt.trim(); else delete state.notes[id]; saveState(); renderSchedule(); toast('Saved!'); }
+}
+function applyFilters() {
+    const s = document.getElementById('searchBox').value.toLowerCase().trim(), st = document.getElementById('statusFilter').value;
+    document.querySelectorAll('#scheduleBox td.topic').forEach(td => {
+        const txt = td.querySelector('.topic-title').textContent.toLowerCase();
+        const cbs = [...td.querySelectorAll('input')]; if(!cbs.length) return;
+        const all = cbs.every(c => c.checked), mast = cbs[3] && cbs[3].checked;
+        let show = true;
+        if(s && !txt.includes(s)) show = false;
+        if(st === 'inc' && all) show = false; if(st === 'com' && !all) show = false; if(st === 'nod' && mast) show = false;
+        td.parentElement.style.display = show ? '' : 'none';
+    });
+}
+function toggleMonth(h) { const m = h.nextElementSibling; m.style.display = m.style.display==='none'?'block':'none'; }
+function expandAll() { document.querySelectorAll('.mcnt').forEach(m => m.style.display='block'); }
+function collapseAll() { document.querySelectorAll('.mcnt').forEach(m => m.style.display='none'); }
+
+function updateBadges() {
+    schedule.forEach((mo, mIdx) => {
+        const tot = mo.weeks.length * mo.weeks[0].length * 4; let dn = 0;
+        mo.weeks.forEach((wk, wi) => wk.forEach((_, si) => { for(let ti=0; ti<4; ti++) if(state.checks[`cb-${mo.phase}-${mIdx}-${wi}-${si}-${ti}`]) dn++; }));
+        const p = tot ? Math.round(dn/tot*100) : 0; const el = document.getElementById(`mb-${mo.phase}-${mIdx}`);
+        if(el) { el.textContent = p+'%'; el.className = p===100?'badge b-ok':(p>0?'badge b-warn':'badge b-purp'); }
+    }); updateStats();
+}
+
+// --- MOCKS ---
+function renderPlatSelect() {
+    document.getElementById('mk-plat').innerHTML = state.platforms.map(p => `<option value="${p}">${p}</option>`).join('') + `<option value="AddNew">➕ Add New Platform</option>`;
+}
+function checkNewPlat() {
+    const sel = document.getElementById('mk-plat');
+    if(sel.value === "AddNew") {
+        const np = prompt("Platform Name:");
+        if(np && np.trim()) { state.platforms.push(np.trim()); saveState(); renderPlatSelect(); sel.value = np.trim(); } 
+        else sel.selectedIndex = 0;
+    }
+}
+function calcPerc() {
+    const r = +document.getElementById('mk-rank').value, t = +document.getElementById('mk-total').value;
+    const disp = document.getElementById('mk-perc-disp');
+    if(t > 0 && r > 0 && r <= t) {
+        const p = ((t - r) / t) * 100; disp.textContent = p.toFixed(2) + "%";
+        disp.style.color = p >= 90 ? "var(--ok)" : (p >= 80 ? "var(--warn)" : "var(--err)");
+        disp.style.textShadow = `0 0 15px ${disp.style.color}`;
+    } else { disp.textContent = "0.00%"; disp.style.color = "var(--ok)"; }
+}
+function saveMock() {
+    const d = document.getElementById('mk-date').value, pl = document.getElementById('mk-plat').value, ty = document.getElementById('mk-type').value;
+    const sc = document.getElementById('mk-score').value || "-", r = +document.getElementById('mk-rank').value, t = +document.getElementById('mk-total').value;
+    const n = document.getElementById('mk-notes').value.trim();
+    if(!d || r<=0 || t<=0 || r>t) return toast('⚠️ Invalid input', 'err');
+    state.mocks.push({ id: Date.now(), date:d, plat:pl, type:ty, score:sc, rank:r, total:t, perc: (((t-r)/t)*100).toFixed(2), notes:n });
+    saveState(); renderMocks(); drawCharts(); updateStats(); toast('✅ Saved!');
+    ['mk-score','mk-rank','mk-total','mk-notes'].forEach(id => document.getElementById(id).value = ''); calcPerc();
+}
+function delMock(id) {
+    if(!confirm("Delete record?")) return; state.mocks = state.mocks.filter(m => m.id !== id);
+    saveState(); renderMocks(); drawCharts(); updateStats(); toast('Deleted', 'warn');
+}
+function renderMocks() {
+    const tb = document.getElementById('mocksTbody');
+    if(!state.mocks.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">No mocks yet.</td></tr>'; return; }
+    tb.innerHTML = [...state.mocks].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(m => {
+        const c = m.perc>=90?'b-ok':(m.perc>=80?'b-warn':'b-err');
+        return `<tr><td style="white-space:nowrap">${m.date}</td><td><b>${m.plat}</b></td><td>${m.type}</td><td><b>${m.score}</b></td><td>${m.rank}/${m.total}</td>
+        <td><span class="badge ${c}">${m.perc}%</span></td><td><div style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${m.notes}">${m.notes||'-'}</div></td>
+        <td><button class="btn r" style="padding:4px 8px; font-size:11px;" onclick="delMock(${m.id})">Del</button></td></tr>`;
+    }).join('');
+}
+
+// --- CHARTS & STATS ---
+function updateStats() {
+    let tpc = 0; schedule.forEach(m => tpc += m.weeks.length * m.weeks[0].length);
+    document.getElementById('st-topics').textContent = tpc;
+    document.getElementById('st-done').textContent = `${Object.keys(state.checks).length} / ${tpc*4}`;
+    document.getElementById('st-mocks').textContent = state.mocks.length;
+    let av="0.00", mx="0.00";
+    if(state.mocks.length>0) {
+        av = (state.mocks.reduce((s,m)=>s+(+m.perc),0)/state.mocks.length).toFixed(2);
+        mx = Math.max(...state.mocks.map(m=>+m.perc)).toFixed(2);
+    }
+    document.getElementById('st-avgp').textContent = av+'%'; document.getElementById('st-maxp').textContent = mx+'%';
+    document.getElementById('st-avgp').parentElement.className = `stat glass ${av>=90?'ok':(av>=80?'warn':'err')}`;
+}
+
+function prepC(id) {
+    const cv = document.getElementById(id); if(!cv || !cv.clientWidth) return null;
+    const r=window.devicePixelRatio||1, w=cv.clientWidth, h=cv.clientHeight; cv.width=w*r; cv.height=h*r;
+    const ctx = cv.getContext('2d'); ctx.scale(r,r); return {ctx, w, h};
+}
+
+function drawBar(id, labels, data, colors) {
+    const p = prepC(id); if(!p) return; const {ctx, w, h} = p; const pad=30, cw=w-pad*2, ch=h-pad*2;
+    ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.beginPath(); ctx.moveTo(pad,pad); ctx.lineTo(pad,pad+ch); ctx.lineTo(pad+cw,pad+ch); ctx.stroke();
+    const max = Math.max(100, ...data, 0), bw = (cw/(labels.length||1))*0.6, sx = cw/(labels.length||1);
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    data.forEach((v,i) => {
+        const bh=ch*(v/max), x=pad+sx*i+sx/2, y=pad+ch-bh;
+        ctx.fillStyle=colors[i%colors.length]; ctx.beginPath(); ctx.roundRect(x-bw/2, y, bw, bh, [4,4,0,0]); ctx.fill();
+        ctx.fillStyle='#f8fafc'; ctx.font='11px sans-serif'; ctx.fillText(labels[i], x, pad+ch+8);
+        ctx.font='bold 11px sans-serif'; if(bh>20) { ctx.fillStyle='#fff'; ctx.fillText(v.toFixed(1)+'%', x, y+5); }
+    });
+}
+
+function getAggData() {
+    const tf = document.getElementById('timeframeSel').value, arr = [...state.mocks].sort((a,b)=>new Date(a.date)-new Date(b.date));
+    if(!arr.length) return {l:[], d:[]};
+    if(tf==='all') return {l: arr.map(m=>m.date.slice(5)), d: arr.map(m=>+m.perc)};
+    let grp = {};
+    arr.forEach(m => {
+        let k; const d=new Date(m.date);
+        if(tf==='monthly') k=m.date.slice(0,7);
+        else {
+            const dys = Math.floor((d - new Date(d.getFullYear(),0,1))/864e5);
+            let w = Math.ceil((d.getDay()+1+dys)/7);
+            if(tf==='weekly') k = d.getFullYear()+"-W"+String(w).padStart(2,'0');
+            else k = d.getFullYear()+"-BW"+Math.floor(w/2);
+        }
+        if(!grp[k]) grp[k]=[]; grp[k].push(+m.perc);
+    });
+    const l = Object.keys(grp); return { l, d: l.map(k => grp[k].reduce((a,b)=>a+b,0)/grp[k].length) };
+}
+
+function drawTrend() {
+    const p = prepC('ch-trend'); if(!p) return; const {ctx, w, h} = p; const pad=40, cw=w-pad*2, ch=h-pad*2;
+    ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(pad,pad); ctx.lineTo(pad,pad+ch); ctx.lineTo(pad+cw,pad+ch); ctx.stroke();
+    ctx.font='11px sans-serif'; ctx.fillStyle='#f8fafc'; ctx.textAlign='right'; ctx.textBaseline='middle';
+    for(let i=0;i<=5;i++) { let y=pad+ch-(ch/5)*i; ctx.fillText(i*20, pad-8, y); ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(pad+cw,y); ctx.stroke(); }
+    
+    const {l, d} = getAggData(); if(!l.length) { ctx.textAlign='center'; ctx.fillText("No data", w/2, h/2); return; }
+    const sx = l.length>1 ? cw/(l.length-1) : cw/2;
+    
+    ctx.beginPath(); ctx.moveTo(pad, pad+ch); d.forEach((v,i) => ctx.lineTo(pad+(l.length===1?sx:sx*i), pad+ch-(v/100)*ch)); ctx.lineTo(pad+(l.length===1?sx:cw), pad+ch);
+    let grad = ctx.createLinearGradient(0,pad,0,pad+ch); grad.addColorStop(0, 'rgba(59,130,246,0.5)'); grad.addColorStop(1, 'rgba(59,130,246,0)');
+    ctx.fillStyle=grad; ctx.fill();
+    
+    ctx.beginPath(); ctx.lineWidth=2; ctx.strokeStyle='#3b82f6';
+    d.forEach((v,i) => { let x=pad+(l.length===1?sx:sx*i), y=pad+ch-(v/100)*ch; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); }); ctx.stroke();
+    
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    d.forEach((v,i) => {
+        let x=pad+(l.length===1?sx:sx*i), y=pad+ch-(v/100)*ch;
+        ctx.fillStyle='#0f172a'; ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#3b82f6'; ctx.stroke();
+        ctx.fillStyle='#f8fafc'; ctx.fillText(l[i], x, pad+ch+10);
+        ctx.fillStyle = v>=90?'#10b981':(v>=80?'#f59e0b':'#ef4444'); ctx.font='bold 10px sans-serif'; ctx.fillText(v.toFixed(1), x, y-18); ctx.font='11px sans-serif';
+    });
+}
+
+function drawCharts() {
+    drawTrend();
+    const ph = [1,2,3].map(p => {
+        let t=0, dn=0; schedule.filter(m=>m.phase===p).forEach((mo, midx) => mo.weeks.forEach((wk, wi) => wk.forEach((_,si) => { t+=4; for(let i=0;i<4;i++) if(state.checks[`cb-${p}-${schedule.indexOf(mo)}-${wi}-${si}-${i}`]) dn++; })));
+        return t?(dn/t*100):0;
+    }); drawBar('ch-phase', ['Phase 1', 'Phase 2', 'Phase 3'], ph, ['#3b82f6', '#f59e0b', '#8b5cf6']);
+    
+    const sub=["Math","Reas","Gram","Vocab","GK","Comp"]; let sc=Array(6).fill(0), st=Array(6).fill(0);
+    schedule.forEach((mo, mIdx) => mo.weeks.forEach((wk,wi) => wk.forEach((_,si) => { st[si]+=4; for(let i=0;i<4;i++) if(state.checks[`cb-${mo.phase}-${mIdx}-${wi}-${si}-${i}`]) sc[si]++; })));
+    drawBar('ch-subj', sub, sc.map((c,i)=>st[i]?(c/st[i]*100):0), ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#14b8a6']);
+    
+    let pM={}; state.mocks.forEach(m => { if(!pM[m.plat]) pM[m.plat]={s:0,c:0}; pM[m.plat].s+=+m.perc; pM[m.plat].c++; });
+    const pK=Object.keys(pM); drawBar('ch-plat', pK, pK.map(k=>pM[k].s/pM[k].c), pK.map((_,i)=>['#8b5cf6','#3b82f6','#10b981','#f59e0b'][i%4]));
+}
+
+// --- EXPORT/IMPORT ---
+function exportData() {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(state)], {type:'application/json'})); 
+    a.download = `Aatmasamman_Backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); toast('Data Exported');
+}
+function handleImport(e) {
+    const f = e.target.files[0]; if(!f) return; const r = new FileReader();
+    r.onload = () => { try { const d = JSON.parse(r.result); if(d.checks) { state = d; if(!state.platforms) state.platforms=["Testbook","Oliveboard","Pinnacle","RWA","SuperMocks"]; saveState(); renderAll(); toast('✅ Restored!'); } else toast('Invalid file','err'); } catch(er) { toast('Invalid JSON','err'); } };
+    r.readAsText(f); e.target.value = '';
+}
+function resetAll() { if(confirm('⚠️ WIPE ALL DATA?')) { state = { checks:{}, notes:{}, mocks:[], platforms:["Testbook","Oliveboard","Pinnacle","RWA","SuperMocks"] }; saveState(); renderAll(); toast('Reset done','warn'); } }
+function renderAll() { renderPlatSelect(); renderSchedule(); renderMocks(); drawCharts(); }
+window.addEventListener('resize', drawCharts);
+</script>
+</body>
+</html>

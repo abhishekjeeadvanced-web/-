@@ -1,0 +1,17 @@
+{
+  "name": "Mission आत्मसम्मान - SSC CGL Tracker",
+  "short_name": "आत्मसम्मान",
+  "description": "The Ultimate 22-Month SSC CGL Preparation Tracker and Mock Analyzer.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
